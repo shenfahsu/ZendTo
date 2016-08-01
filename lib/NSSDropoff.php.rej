@@ -1,0 +1,49 @@
+***************
+*** 649,654 ****
+          if ( ! $whoWasIt ) {
+            $whoWasIt = ( $_POST['emailAddr'] ? $_POST['emailAddr'] : ( $_GET['emailAddr'] ? $_GET['emailAddr'] : $smarty->getConfigVariable('UnknownRecipient')));
+            $whoWasItEmail = preg_replace('/ /', '', $whoWasIt);
+          } else {
+            $whoWasItUID = $whoWasIt;
+            $whoWasIt = $this->_dropbox->authorizedUserData('displayName');
+--- 660,668 ----
+          if ( ! $whoWasIt ) {
+            $whoWasIt = ( $_POST['emailAddr'] ? $_POST['emailAddr'] : ( $_GET['emailAddr'] ? $_GET['emailAddr'] : $smarty->getConfigVariable('UnknownRecipient')));
+            $whoWasItEmail = preg_replace('/ /', '', $whoWasIt);
++ 	  if ( ! isValidEmail($whoWasItEmail) ) {
++ 		$whoWasItEmail = "Malformed e-mail";
++ 	  } 
+          } else {
+            $whoWasItUID = $whoWasIt;
+            $whoWasIt = $this->_dropbox->authorizedUserData('displayName');
+***************
+*** 670,683 ****
+             
+            if ( $this->_confirmDelivery && (! $extantPickups || ($extantPickups[0][0] == 0)) ) {
+              $this->_dropbox->writeToLog("sending confirmation email to ".$this->_senderEmail." for claim ".$this->_claimID);
+-             $smarty->assign('whoWasIt', $whoWasIt);
+              $smarty->assign('claimID', $this->_claimID);
+              $smarty->assign('filename', htmlentities($fileList[0]['basename'], ENT_NOQUOTES, 'UTF-8'));
+              $smarty->assign('remoteAddr', $_SERVER['REMOTE_ADDR']);
+              $smarty->assign('hostname', gethostbyaddr($_SERVER['REMOTE_ADDR']));
+              $emailSubject = $smarty->getConfigVariable('PickupEmailSubject');
+              // The subject line can have a %s in it, so used it as a template.
+-             $emailSubject = sprintf($emailSubject, $whoWasIt, $fileList[0]['basename']);
+  
+              if ((preg_match('/^[yYtT1]/', MYZENDTO) && $this->_senderEmail != $whoWasItEmail) || preg_match('/^[^yYtT1]/', MYZENDTO)) {
+                if ( ! $this->_dropbox->deliverEmail(
+--- 684,697 ----
+             
+            if ( $this->_confirmDelivery && (! $extantPickups || ($extantPickups[0][0] == 0)) ) {
+              $this->_dropbox->writeToLog("sending confirmation email to ".$this->_senderEmail." for claim ".$this->_claimID);
++             $smarty->assign('whoWasIt', $whoWasItEmail);
+              $smarty->assign('claimID', $this->_claimID);
+              $smarty->assign('filename', htmlentities($fileList[0]['basename'], ENT_NOQUOTES, 'UTF-8'));
+              $smarty->assign('remoteAddr', $_SERVER['REMOTE_ADDR']);
+              $smarty->assign('hostname', gethostbyaddr($_SERVER['REMOTE_ADDR']));
+              $emailSubject = $smarty->getConfigVariable('PickupEmailSubject');
+              // The subject line can have a %s in it, so used it as a template.
++             $emailSubject = sprintf($emailSubject, $whoWasItEmail, $fileList[0]['basename']);
+  
+              if ((preg_match('/^[yYtT1]/', MYZENDTO) && $this->_senderEmail != $whoWasItEmail) || preg_match('/^[^yYtT1]/', MYZENDTO)) {
+                if ( ! $this->_dropbox->deliverEmail(
